@@ -1,6 +1,6 @@
 <template>
   <NLayout>
-    <NCard :title="`Welcome to ${SystemName}`">
+    <NCard :title="`欢迎来到 ${SystemName}`" hoverable>
       <NTabs default-value="login" size="large" animated justify-content="space-evenly">
         <NTabPane name="login" tab="账号密码登录">
           <NForm ref="formRef" :model="model" :rules="rules" :show-label="false">
@@ -39,10 +39,14 @@
                 />
               </NFormItem>
               <NFormItem path="code">
-                <NSpace class="flex justify-between" justify="space-evenly">
+                <NSpace :size="20">
                   <NInput v-model:value="model.code" placeholder="请输入验证码" size="large" />
-                  <NButton size="large" :disabled="verCodeButtonDisabled">
-                    {{ getVerCodeButtonText }}
+                  <NButton
+                    size="large"
+                    :disabled="verCodeButtonDisabled"
+                    @click="onGetPhoneVerifyCode('Login', model.phoneNumber)"
+                  >
+                    {{ isGetingVerCode ? getCodeLoadingSecond + '秒' : '点击发送验证码' }}
                   </NButton>
                 </NSpace>
               </NFormItem>
@@ -72,35 +76,31 @@ import {
   NInput,
   useMessage,
   NTabs,
-  NTabPane
+  NTabPane,
+  useLoadingBar
 } from 'naive-ui'
 import type { FormInst, FormRules } from 'naive-ui'
 
 import { router } from '@/router'
 import { SystemName } from '@/config'
-import { sleep } from '@/utils/tools'
-import { useUserBaseStore } from '@/stores/user'
+import { sleep, isPhone } from '@/utils/tools'
 import type { LoginProps } from '@/types/user'
+import { usePhoneVerifyCode } from '@/hooks/useUser'
 
 const message = useMessage()
-const { setUserInfo } = useUserBaseStore()
 
 const loading = ref(false)
 const formRef = ref<FormInst | null>(null)
-const getVerCodeButtonText = ref('获取验证码')
+const { isGetingVerCode, getCodeLoadingSecond, onGetPhoneVerifyCode } = usePhoneVerifyCode()
 
 const model = ref<LoginProps>({
-  phoneNumber: '13312345679',
+  phoneNumber: '18012858611',
   pwd: '123456',
   code: ''
 })
 
 const verCodeButtonDisabled = computed(() => {
-  return (
-    // !/^[A-Za-z0-9\u4e00-\u9fa5]+@[a-zA-Z0-9_-]+(.[a-zA-Z0-9_-]+)+$/.test(model.value.email) ||
-    // getVerCodeButtonText.value !== '请输入收到的验证码'
-    false
-  )
+  return !isPhone(model.value.phoneNumber) || isGetingVerCode.value === true
 })
 
 const rules: FormRules = {
@@ -108,33 +108,30 @@ const rules: FormRules = {
   pwd: [{ required: true, message: '请输入您的密码', trigger: ['input', 'blur'] }],
   code: [{ required: true, message: '请输入收到的验证码', trigger: ['input', 'blur'] }]
 }
+const loadingBar = useLoadingBar()
 
 const onSubmit = () => {
   formRef.value?.validate(async (errors) => {
     if (!errors) {
-      // console.log(model.value)
+      loadingBar.start()
       loading.value = true
       await sleep(2000)
-      const userBase = await login(model.value)
       message.success('登录成功')
-      setUserInfo(userBase)
-      setToken(userBase.token)
       loading.value = false
       router.push('/main')
+      loadingBar.finish()
     }
   })
 }
 onMounted(async () => {
-  if (getToken()) {
-    const userBase = await getProfile()
-    if (userBase) {
-      setUserInfo(userBase)
-      router.push('/main')
-    }
-  }
+  // if (getToken()) {
+  //   const userBase = await getProfile()
+  //   if (userBase) {
+  //     setUserInfo(userBase)
+  //     router.push('/main')
+  //   }
+  // }
 })
-
-// import ThemeChangeButton from '@@/core/ThemeChangeButton.vue'
 </script>
 
 <style lang="scss" scoped>

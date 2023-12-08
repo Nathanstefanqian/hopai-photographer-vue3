@@ -113,7 +113,12 @@ export const formatListTime = (list: any[], format = 'YYYY-MM-DD') => {
     return i
   })
 }
+
+export const isPhone = (phone: string): boolean => {
+  return /^1[3-9]\d{9}$/.test(phone)
+}
 export default {
+  isPhone,
   toType,
   filterNull,
   getUnixTime,

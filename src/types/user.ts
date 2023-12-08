@@ -13,3 +13,5 @@ export interface UserBaseType {
   loginTime: string
   token: string
 }
+
+export type VerCodeType = 'Login' | 'Forgot' | 'Register'
