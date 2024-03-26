@@ -1,39 +1,57 @@
 <template>
-  <NLayoutHeader bordered>
-    <NSpace class="layout-header" justify="space-between" align="center">
-      <NSpace align="center">
-        <h1 class="layout-header-logo" @click="router.push('/main')">
-          <NImage round src="/image/hopai.jpg" preview-disabled />
-          {{ SystemName }}
-        </h1>
-      </NSpace>
-      <NSpace align="center">
-        <NSwitch :default-value="!!isDark" @click="toggleTheme">
-          <template #checked-icon>
-            <MyIcon name="Moon" />
-          </template>
-          <template #unchecked-icon>
-            <MyIcon name="Sunny" />
-          </template>
-        </NSwitch>
-        <NColors />
-        <NAvatar size="small" @click="$router.push('/login')" bordered round src="/image/boy.jpg" />
-      </NSpace>
-    </NSpace>
+  <NLayoutHeader bordered style="display: flex">
+    <NBreadcrumb style="margin-left: 20px">
+      <NBreadcrumbItem v-for="(item, index) in list" :key="index" :href="item.path">
+        {{ item.name }}
+      </NBreadcrumbItem>
+    </NBreadcrumb>
+    <span style="margin-left: auto">哈喽， {{ nickname }}</span>
+    <n-popconfirm @positive-click="unLogin">
+      <template #trigger>
+        <NAvatar
+          size="small"
+          bordered
+          round
+          :src="avatar"
+          style="margin-left: 20px; margin-right: 20px"
+        />
+      </template>
+      退出登录？
+    </n-popconfirm>
   </NLayoutHeader>
 </template>
-
 <script setup lang="ts">
-import { NLayoutHeader, NSpace, NImage, NSwitch, NAvatar } from 'naive-ui'
+import { NLayoutHeader, NBreadcrumb, NBreadcrumbItem } from 'naive-ui'
+import { computed } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
+import { useCache, CACHE_KEY } from '@/hooks/useCache'
+const route = useRoute()
+const list = computed(() => {
+  let list: any[] = []
+  route.matched.forEach((item) => {
+    if (item.name) list.push({ name: item.name, path: item.path })
+  })
+  return list
+})
+const router = useRouter()
 
-import NColors from '@@/core/NColors.vue'
-import MyIcon from '@@/core/MyIcon'
+const { wsCache } = useCache()
+const user = wsCache.get(CACHE_KEY.USER)
+const avatar = user.avatar
+const nickname = user.nickname
 
-import { SystemName } from '@/config'
-
-import { useTheme } from '@/hooks/useTheme'
-
-import { router } from '@/router'
-
-const { toggleTheme, isDark } = useTheme()
+const unLogin = () => {
+  router.push('/login')
+  wsCache.clear()
+  window.$message.success('退出成功')
+}
 </script>
+
+<style scoped>
+.n-layout-header {
+  display: flex;
+  align-items: center;
+  padding: 5px;
+  height: 50px;
+}
+</style>

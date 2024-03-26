@@ -98,11 +98,16 @@ export const isMobile = () => {
 
 // 生成随机UUID
 export const makeUUID = () => {
-  const chars = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz'.split('')
-  const radix = chars.length
-  const uuid = []
-  for (let i = 0; i < 32; i++) uuid[i] = chars[0 | (Math.random() * radix)]
-  return uuid.join('')
+  // 获取当前时间戳
+  const timestamp = Date.now();
+
+  // 生成一个随机数作为后缀，这里使用了 Math.random() 方法
+  const randomSuffix = Math.random().toString(36).substring(2, 8);
+
+  // 结合时间戳和随机数生成唯一的文件名
+  const fileName = `${timestamp}_${randomSuffix}`;
+
+  return fileName;
 }
 
 export const formatListTime = (list: any[], format = 'YYYY-MM-DD') => {
@@ -117,6 +122,17 @@ export const formatListTime = (list: any[], format = 'YYYY-MM-DD') => {
 export const isPhone = (phone: string): boolean => {
   return /^1[3-9]\d{9}$/.test(phone)
 }
+
+export const copyOrderId = (id: any) => {
+  const textarea = document.createElement('textarea')
+  textarea.value = id
+  document.body.appendChild(textarea)
+  textarea.select()
+  document.execCommand('copy')
+  document.body.removeChild(textarea)
+  window.$message.info('订单号已复制到粘贴板  ')
+}
+
 export default {
   isPhone,
   toType,

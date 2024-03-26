@@ -1,13 +1,20 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import Layout from '@@/layout/Layout.vue'
-import Welcome from '@/views/Main/Dashboard/Home.vue'
 import Login from '@/views/Login.vue'
 import Home from '@/views/Home.vue'
-import Frame from '@@/layout/Frame.vue'
-import orderHome from '@/views/Main/Order/Order.vue'
-import orderDetail from '@/views/Main/Order/OrderDetail.vue'
-import uploadHome from '@/views/Main/Upload/Upload.vue'
+import orderHome from '@/views/Main/Order/index.vue'
+import orderDetail from '@/views/Main/Order/detail.vue'
+import uploadHome from '@/views/Main/Upload/index.vue'
 
+export const resetRouter = (): void => {
+  const resetWhiteNameList = ['Login']
+  router.getRoutes().forEach((route) => {
+    const { name } = route
+    if (name && !resetWhiteNameList.includes(name as string)) {
+      router.hasRoute(name) && router.removeRoute(name)
+    }
+  })
+}
 export const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
@@ -22,42 +29,32 @@ export const router = createRouter({
       component: Login
     },
     {
-      path: '/main',
-      name: '主页',
+      path: '/order',
+      name: '',
       component: Layout,
       children: [
         {
           path: '',
-          name: 'Welcome',
-          component: Welcome
+          name: '订单中心',
+          component: orderHome
         },
         {
-          path: 'order',
-          name: '',
-          component: Frame,
-          children: [{
-            path: '',
-            name: '订单列表',
-            component: orderHome
-          },
-          {
-              path: 'detail',
-              name: '订单详情',
-              component: orderDetail
-          }]
-        },
+          path: 'detail/:id',
+          name: '上传照片',
+          component: orderDetail
+        }
+      ]
+    },
+    {
+      path: '/upload',
+      name: '',
+      component: Layout,
+      children: [
         {
-          path: 'upload',
-          name: '',
-          component: Frame,
-          children: [
-            {
-              path: '',
-              name: '上传列表',
-              component: uploadHome
-            }
-          ]
-        },
+          path: '',
+          name: '上传列表',
+          component: uploadHome
+        }
       ]
     }
   ]

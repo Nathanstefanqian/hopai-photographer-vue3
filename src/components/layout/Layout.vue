@@ -1,16 +1,18 @@
 <template>
   <NLayout class="layout-wrap" embedded>
-    <Header />
     <NLayout has-sider class="layout-main" embedded>
-      <Menu></Menu>
+      <Sider />
       <NLayout class="layout-content">
-        <BreadHeader></BreadHeader>
-        <NLayoutContent :native-scrollbar="false" :content-style="{ padding: '20px' }" embedded>
-          <RouterView v-slot="{ Component }">
-            <transition name="slide" mode="out-in">
+        <Header />
+        <NLayoutContent
+          :native-scrollbar="false"
+          :content-style="{ padding: '20px 35px' }"
+          embedded
+        >
+          <RouterView />
+          <!-- <transition name="slide" mode="out-in">
               <component :is="Component" :key="$route.path"></component>
-            </transition>
-          </RouterView>
+            </transition> -->
         </NLayoutContent>
       </NLayout>
     </NLayout>
@@ -19,11 +21,12 @@
 
 <script setup lang="ts">
 import { RouterView } from 'vue-router'
-import { NLayout, NLayoutContent } from 'naive-ui'
+import { NLayout, NLayoutContent, useMessage } from 'naive-ui'
 
+import Sider from './Sider.vue'
 import Header from './Header.vue'
-import Menu from './Menu.vue'
-import BreadHeader from './BreadHeader.vue'
+
+window.$message = useMessage()
 </script>
 
 <style lang="scss">

@@ -1,5 +1,10 @@
 <template>
-  <NConfigProvider :theme="theme" abstract :locale="zhCN" :date-locale="dateZhCN">
+  <NConfigProvider
+    abstract
+    :locale="zhCN"
+    :date-locale="dateZhCN"
+    :theme-overrides="themeOverrides"
+  >
     <NMessageProvider>
       <NDialogProvider>
         <NLoadingBarProvider>
@@ -13,7 +18,6 @@
 
 <script setup lang="ts">
 import { RouterView } from 'vue-router'
-import { storeToRefs } from 'pinia'
 import {
   NConfigProvider,
   zhCN,
@@ -22,8 +26,17 @@ import {
   NDialogProvider,
   NLoadingBarProvider
 } from 'naive-ui'
-import { useThemeStore } from '@/stores/theme'
+import type { GlobalThemeOverrides } from 'naive-ui'
 import GlobalSetting from '@@/core/GlobalSetting.vue'
 
-const { theme } = storeToRefs(useThemeStore())
+// 配置主题色  diff
+const themeOverrides: GlobalThemeOverrides = {
+  common: {
+    primaryColor: '#142AF3',
+    primaryColorHover: '#142AF3'
+  },
+  Button: {
+    textColor: '#142AF3'
+  }
+}
 </script>

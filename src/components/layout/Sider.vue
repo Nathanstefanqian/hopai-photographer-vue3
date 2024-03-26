@@ -5,11 +5,18 @@
     :collapsed="barCollapsed"
     :collapsed-width="60"
     :width="220"
-    show-trigger="arrow-circle"
     @collapse="toggleBarCollapsed"
     @expand="toggleBarCollapsed"
     :native-scrollbar="false"
   >
+    <div class="logo">
+      <NSpace align="center">
+        <h1 class="layout-header-logo" @click="router.push('/order')" style="border-radius: 30px">
+          <NImage src="/image/hopai.png" preview-disabled />
+          {{ SystemName }}
+        </h1>
+      </NSpace>
+    </div>
     <NMenu
       :collapsed="barCollapsed"
       :collapsed-width="64"
@@ -27,9 +34,11 @@ import { storeToRefs } from 'pinia'
 import { NLayoutSider, NMenu, NIcon } from 'naive-ui'
 import type { MenuOption } from 'naive-ui'
 import { RouterLink } from 'vue-router'
+import { router } from '@/router'
 import type { RouteLocationRaw } from 'vue-router'
 
 import { ChatboxEllipsesOutline, LogoInstagram } from '@vicons/ionicons5'
+import { SystemName } from '@/config'
 
 import { useThemeStore } from '@/stores/theme'
 const themeStore = useThemeStore()
@@ -45,15 +54,24 @@ const renderLabel = (to: RouteLocationRaw, label: string) => {
 }
 const menuOptions: MenuOption[] = [
   {
-    label: renderLabel('/main/order', '订单选择'),
+    label: renderLabel('/order', '订单中心'),
     key: 'order',
     icon: renderIcon(ChatboxEllipsesOutline)
   },
   {
-    label: renderLabel('/main/upload', '上传列表'),
+    label: renderLabel('/upload', '上传列表'),
     key: 'upload',
     icon: renderIcon(LogoInstagram)
   }
 ]
 // const collapsed = ref(false)
 </script>
+
+<style scoped lang="scss">
+.logo {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 80px;
+}
+</style>

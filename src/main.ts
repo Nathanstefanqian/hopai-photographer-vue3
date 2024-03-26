@@ -6,7 +6,8 @@ import 'vfonts/Lato.css'
 // 等宽字体
 import 'vfonts/FiraCode.css'
 
-// import './index.css'
+
+import './permission'
 
 import '@/styles/style.scss'
 

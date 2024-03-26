@@ -7,5 +7,10 @@
     {
       "path": "./tsconfig.node.json"
     }
-  ]
+  ],
+  "compilerOptions": {
+    // 其他选项...
+    "noEmitOnError": false,
+    // 其他选项...
+  },
 }

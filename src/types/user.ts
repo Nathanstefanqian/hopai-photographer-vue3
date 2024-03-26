@@ -1,7 +1,7 @@
 export interface LoginProps {
   phoneNumber: string
-  pwd: string
   code: string
+  agreeTerms: boolean
 }
 
 export interface UserBaseType {

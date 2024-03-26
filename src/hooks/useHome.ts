@@ -6,7 +6,7 @@ import { Toast } from '@/utils/toast'
 
 export const useHome = () => {
   const router = useRouter()
-  Toast.loading('Ai Chat initializing')
+  Toast.loading('初始化中')
   
   router.push('/login')
 }
