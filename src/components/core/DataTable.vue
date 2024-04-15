@@ -18,7 +18,9 @@
           >
             <div class="item" v-for="(item, index) in data" v-bind:key="index">
               <div class="top">
-                <span style="margin-right: 32px">{{ formatDate(item.orderTime) }}</span>
+                <span style="margin-right: 32px">{{
+                  item.createTime ? formatDate(item.createTime) : '暂无时间'
+                }}</span>
                 <span style="margin-right: 20px">订单号: {{ item.id }}</span>
                 <n-icon class="icon" @click="copyOrderId(item.id)">
                   <CopyOutline />
@@ -26,7 +28,7 @@
               </div>
               <div class="bottom">
                 <div class="info" style="width: 50%">
-                  <div class="tag">风格写真</div>
+                  <div class="tag">{{ item.spuDescribe }}</div>
                   <div class="info-detail">
                     <div style="display: flex">
                       <span style="margin-right: 25px">客户：</span>
@@ -41,7 +43,7 @@
                       <span>{{ item.remark || '无' }}</span>
                     </div>
                   </div>
-                  <div class="price">￥ {{ item.orderAmt }}</div>
+                  <div class="price">￥ {{ item.orderAmt / 100 }}</div>
                 </div>
                 <div style="width: 20%">
                   <span>{{ formatDate(item.appointmentStartTime) }}</span>
@@ -50,7 +52,11 @@
                   <span>{{ getStatusText(item.orderStatus) }}</span>
                 </div>
                 <div style="width: 15%; margin-right: 0">
-                  <n-button @click="$router.push(`/order/detail/${item.id}`)">上传照片</n-button>
+                  <n-button
+                    @click="$router.push(`/order/detail/${item.id}`)"
+                    :disabled="item.orderStatus < 3 || item.orderStatus > 6"
+                    >上传照片</n-button
+                  >
                 </div>
               </div>
             </div>
@@ -65,6 +71,7 @@
         <n-pagination
           class="pagination"
           v-model:page="queryParams.pageNo"
+          v-model:page-size="queryParams.pageSize"
           :item-count="total"
           @click="handleClick"
         />

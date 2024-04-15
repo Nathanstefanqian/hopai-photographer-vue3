@@ -1,17 +1,20 @@
 import request from '@/config/axios'
 
 interface postPicVO {
-  orderId: string | string[]
-  picName: string
-  picUrl: string
-  bigPicUrl: string
-  description: string
-  status: number
+  orderId?: string | string[]
+  picName?: string
+  picUrl?: string
+  bigPicUrl?: string
+  description?: string
+  status?: number
+  id?: string
 }
 
 interface getPicVO {
   pageNo: number
   pageSize: number
+  orderId: string | string[]
+  statusList?: string[]
 }
 
 // 为订单添加一张照片
@@ -31,7 +34,7 @@ export const deletePhotographerPic = (id: any) => {
 
 // 获取该订单下所有照片的分页
 export const getPhotographerPic = (data: getPicVO) => {
-  return request.get({ url: `/platform-api/member/photographer/deliver-pic/page?pageSize=${data.pageSize}&pageNo=${data.pageNo}` })
+  return request.get({ url: `/platform-api/member/photographer/deliver-pic/page?pageSize=${data.pageSize}&pageNo=${data.pageNo}&orderId=${data.orderId}&statusList=${data.statusList}` })
 }
 
 // 获取摄影师上传作品的sts凭证
@@ -42,5 +45,10 @@ export const getStsUpload = (id:any) => {
 // 摄影师确认原图订单
 export const postSubmitOrder = (id:any) => {
   const data = { status: 4, orderId: id }
+  return request.post({ url: '/app-api/member/p/order/updateStatus', data })
+}
+
+export const postSubmitTouchOrder = (id:any) => {
+  const data = { status: 6, orderId: id }
   return request.post({ url: '/app-api/member/p/order/updateStatus', data })
 }

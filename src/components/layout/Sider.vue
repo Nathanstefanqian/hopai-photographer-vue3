@@ -57,12 +57,13 @@ const menuOptions: MenuOption[] = [
     label: renderLabel('/order', '订单中心'),
     key: 'order',
     icon: renderIcon(ChatboxEllipsesOutline)
-  },
-  {
-    label: renderLabel('/upload', '上传列表'),
-    key: 'upload',
-    icon: renderIcon(LogoInstagram)
   }
+  //,
+  // {
+  //   label: renderLabel('/upload', '上传列表'),
+  //   key: 'upload',
+  //   icon: renderIcon(LogoInstagram)
+  // }
 ]
 // const collapsed = ref(false)
 </script>
