@@ -9,10 +9,11 @@
     <n-popconfirm @positive-click="unLogin">
       <template #trigger>
         <NAvatar
-          size="small"
+          size="medium"
           bordered
           round
           :src="avatar"
+          object-fit="cover"
           style="margin-left: 20px; margin-right: 20px"
         />
       </template>

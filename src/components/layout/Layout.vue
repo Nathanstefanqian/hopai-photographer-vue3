@@ -1,8 +1,8 @@
 <template>
   <NLayout class="layout-wrap" embedded>
-    <NLayout has-sider class="layout-main" embedded>
+    <NLayout has-sider class="layout-main" embedded :native-scrollbar="false">
       <Sider />
-      <NLayout class="layout-content">
+      <NLayout class="layout-content" :native-scrollbar="false">
         <Header />
         <NLayoutContent
           :native-scrollbar="false"
@@ -30,6 +30,11 @@ window.$message = useMessage()
 </script>
 
 <style lang="scss">
+.layout-main {
+}
+.layout-content {
+  min-width: 1000px;
+}
 .slide-enter-active,
 .slide-leave-active {
   transition: opacity 0.5s, transform 0.5s;

@@ -54,8 +54,8 @@
                 <div style="width: 15%; margin-right: 0">
                   <n-button
                     @click="$router.push(`/order/detail/${item.id}`)"
-                    :disabled="item.orderStatus < 3 || item.orderStatus > 6"
-                    >上传照片</n-button
+                    :disabled="item.orderStatus < 3"
+                    >查看详情</n-button
                   >
                 </div>
               </div>
@@ -111,18 +111,19 @@ const total = ref(0) // 列表的总数
 const handleClick = async () => {
   await getData()
 }
+
 const getStatusText = (status: any) => {
   switch (status) {
     case 0:
-      return '待确认'
+      return '等待用户确认'
     case 1:
-      return '待确认'
+      return '等待摄影师确认'
     case 2:
-      return '待拍摄'
+      return '等待扫码拍摄'
     case 3:
-      return '已拍摄'
+      return '待上传原图'
     case 4:
-      return '待选片'
+      return '等待客户选片'
     case 5:
       return '待上传精修图'
     case 6:

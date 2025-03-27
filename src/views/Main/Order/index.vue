@@ -1,12 +1,27 @@
 <template>
   <div class="tabs">
     <button class="tab" :class="{ 'tab-active': state == 0 }" @click="() => (state = 0)">
-      进行中
+      未拍摄
     </button>
-    <button class="tab" :class="{ 'tab-active': state == 1 }" @click="() => (state = 1)">
+    <button class="tab" :class="{ 'tab-active': state == 3 }" @click="() => (state = 3)">
+      待上传原图
+    </button>
+    <button class="tab" :class="{ 'tab-active': state == 4 }" @click="() => (state = 4)">
+      等待用户选图
+    </button>
+    <button class="tab" :class="{ 'tab-active': state == 5 }" @click="() => (state = 5)">
+      待修图
+    </button>
+    <button class="tab" :class="{ 'tab-active': state == 6 }" @click="() => (state = 6)">
+      待用户确认
+    </button>
+    <button class="tab" :class="{ 'tab-active': state == 100 }" @click="() => (state = 100)">
       已完成
     </button>
-    <button class="tab" :class="{ 'tab-active': state == 2 }" @click="() => (state = 2)">
+    <button class="tab" :class="{ 'tab-active': state == 20 }" @click="() => (state = 20)">
+      退款订单
+    </button>
+    <button class="tab" :class="{ 'tab-active': state == 1000 }" @click="() => (state = 1000)">
       全部订单
     </button>
   </div>

@@ -11,7 +11,12 @@
               <NInput v-model:value="model.phoneNumber" placeholder="请输入手机号" size="large" />
             </NFormItem>
             <NFormItem path="code">
-              <NInput v-model:value="model.code" placeholder="请输入验证码" size="large">
+              <NInput
+                v-model:value="model.code"
+                maxlength="6"
+                placeholder="请输入验证码"
+                size="large"
+              >
                 <template #suffix>
                   <div
                     :class="{

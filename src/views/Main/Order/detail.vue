@@ -88,88 +88,80 @@
             </n-popconfirm>
           </div>
         </n-layout-header>
-
-        <n-layout class="upload-content-layout" position="absolute" :native-scrollbar="false">
-          <div class="upload-content-layout-wrap">
-            <!-- 空状态 -->
-            <div class="upload-empty-layout" v-if="active ? !touchData.length : !picData.length">
-              <div class="empty">
-                <n-image src="/image/empty.svg" preview-disabled />
-                <span style="margin-top: 20px" @click="triggerFileInput">{{
-                  active ? '等待客人选图' : '请上传原图'
-                }}</span>
-              </div>
-            </div>
-            <!-- 精修图 -->
-            <n-image-group v-if="active">
-              <n-space :size="15">
-                <div class="image" v-for="(item, index) in touchData" v-bind:key="index">
-                  <n-image
-                    class="image-block"
-                    width="100"
-                    height="100"
-                    object-fit="cover"
-                    :src="item.bigPicUrlMini ? item.bigPicUrlMini : item.picUrlMini"
-                    :preview-src="item.bigPicUrl ? item.bigPicUrl : item.picUrl"
-                    :show-toolbar="false"
-                  />
-                  <span class="pic-name">{{ item.picName }}</span>
-                  <div class="image-block-left cancel">
-                    <n-icon-wrapper :size="20" :border-radius="10">
-                      <n-icon v-if="item.bigPicUrl" :size="15" :component="Checkmark16Filled" />
-                      <n-icon
-                        v-else
-                        :size="15"
-                        :component="ArrowUpload24Filled"
-                        @click="handleUpload(item.id)"
-                      />
-                    </n-icon-wrapper>
+        <n-layout-content class="upload-content" :native-scrollbar="false">
+          <div class="image-group" v-if="!active">
+            <div class="image" v-for="(item, index) in picData" v-bind:key="index">
+              <n-image
+                class="image-block"
+                width="120"
+                height="160"
+                object-fit="cover"
+                :src="item.picUrlMini"
+                :preview-src="item.picUrl"
+                fallback-src="https://07akioni.oss-cn-beijing.aliyuncs.com/07akioni.jpeg"
+              />
+              <span class="pic-name">{{ item.picName }}</span>
+              <n-popconfirm
+                @positive-click="handleDeletePhoto(item.id)"
+                v-if="!active && data.orderStatus == 3"
+              >
+                <template #trigger>
+                  <div class="image-block-right">
+                    <n-icon><Trash /></n-icon>
                   </div>
-                  <n-popconfirm
-                    @positive-click="handleDeleteTouchPhoto(item.id)"
-                    v-if="item.bigPicUrl && data.orderStatus == 5"
-                  >
-                    <template #trigger>
-                      <div class="image-block-right">
-                        <n-icon><Trash /></n-icon>
-                      </div>
-                    </template>
-                    确认删除该精修照片嘛
-                  </n-popconfirm>
-                </div>
-              </n-space>
-            </n-image-group>
-
-            <!-- 原图 -->
-            <n-image-group v-else>
-              <n-space :size="15">
-                <div class="image" v-for="(item, index) in picData" v-bind:key="index">
-                  <n-image
-                    class="image-block"
-                    width="100"
-                    height="100"
-                    object-fit="cover"
-                    :src="item.picUrlMini"
-                    :preview-src="item.picUrl"
-                  />
-                  <span class="pic-name">{{ item.picName }}</span>
-                  <n-popconfirm
-                    @positive-click="handleDeletePhoto(item.id)"
-                    v-if="!active && data.orderStatus == 3"
-                  >
-                    <template #trigger>
-                      <div class="image-block-right">
-                        <n-icon><Trash /></n-icon>
-                      </div>
-                    </template>
-                    确认删除该照片嘛
-                  </n-popconfirm>
-                </div>
-              </n-space>
-            </n-image-group>
+                </template>
+                确认删除该照片嘛
+              </n-popconfirm>
+            </div>
           </div>
-        </n-layout>
-        <div class="upload-content-layout-pagnination-wrap">
+          <div class="image-group" v-else>
+            <div class="image" v-for="(item, index) in touchData" v-bind:key="index">
+              <n-image
+                class="image-block"
+                width="120"
+                height="160"
+                object-fit="cover"
+                :src="item.bigPicUrlMini ? item.bigPicUrlMini : item.picUrlMini"
+                :preview-src="item.bigPicUrl ? item.bigPicUrl : item.picUrl"
+                fallback-src="https://07akioni.oss-cn-beijing.aliyuncs.com/07akioni.jpeg"
+              />
+              <span class="pic-name">{{ item.picName }}</span>
+              <div class="image-block-left cancel">
+                <n-icon-wrapper :size="20" :border-radius="10">
+                  <n-icon v-if="item.bigPicUrl" :size="15" :component="Checkmark16Filled" />
+                  <n-icon
+                    v-else
+                    :size="15"
+                    :component="ArrowUpload24Filled"
+                    @click="handleUpload(item.id)"
+                  />
+                </n-icon-wrapper>
+              </div>
+              <n-popconfirm
+                @positive-click="handleDeleteTouchPhoto(item.id)"
+                v-if="item.bigPicUrl && data.orderStatus == 5"
+              >
+                <template #trigger>
+                  <div class="image-block-right">
+                    <n-icon><Trash /></n-icon>
+                  </div>
+                </template>
+                确认删除该精修照片嘛
+              </n-popconfirm>
+            </div>
+          </div>
+          <div
+            class="image-empty"
+            v-if="(active && !touchData.length) || (!active && !picData.length)"
+          >
+            <n-image src="/image/empty.svg" preview-disabled />
+            <span class="image-empty-title">暂无图片</span>
+          </div>
+        </n-layout-content>
+        <div
+          class="upload-pagnination"
+          v-if="!((active && !touchData.length) || (!active && !picData.length))"
+        >
           <n-pagination
             v-model:page="queryParams.pageNo"
             v-model:page-size="queryParams.pageSize"
@@ -246,7 +238,7 @@ const testData = ref<picVO[]>(
 // 请求参数
 const queryParams = reactive({
   pageNo: 1,
-  pageSize: 30,
+  pageSize: 50,
   orderId: id,
   statusList: ['0', '1']
 })
@@ -282,6 +274,16 @@ const handleSubmitTouch = async () => {
     error.value = false
   }
   if (error.value) {
+    await Promise.all(
+      touchData.value.map(async (item) => {
+        const params = {
+          id: item.id,
+          status: 2
+        }
+        await uploadApi.updatePhotographerPic(params)
+      })
+    )
+    // await uploadApi.updatePhotographerPicStatus(id)
     const res = await uploadApi.postSubmitTouchOrder(id)
 
     if (res) {
@@ -384,11 +386,10 @@ const getData = async (activeId: any) => {
     queryParams.pageNo = 1
   }
 
-  queryParams.statusList = active.value ? ['1'] : ['0', '1']
+  queryParams.statusList = active.value ? ['1', '2'] : ['0', '1', '2']
 
   try {
     let pic = await uploadApi.getPhotographerPic(queryParams)
-    await getStsToken()
     if (active.value) {
       touchData.value = pic.list
       touchDataTotal.value = pic.total
@@ -407,6 +408,7 @@ const getData = async (activeId: any) => {
         if (item.bigPicUrl) {
           index = item.bigPicUrl.indexOf('.com') + 4
           item.bigPicUrlMini = await signatrueUrl(`${item.bigPicUrl.substring(index)}/minipreview`)
+          console.log(item.picName, '下的', item.bigPicUrlMini)
           item.bigPicUrl = await signatrueUrl(item.bigPicUrl.substring(index))
           touchDataFinishedTotal.value += 1
         }
@@ -435,6 +437,7 @@ const getStatus = (id: any) => {
 }
 
 onMounted(async () => {
+  await getStsToken()
   await getData(active.value)
 })
 </script>
@@ -502,6 +505,7 @@ onMounted(async () => {
   box-sizing: border-box;
   padding: 15px 30px;
   height: calc(100vh - 330px);
+
   &-header {
     display: flex;
     justify-content: space-between;
@@ -524,122 +528,115 @@ onMounted(async () => {
       }
     }
   }
-  &-content-layout {
+
+  &-content {
+    width: 100%;
+    height: 80%;
     margin-top: 20px;
-    padding: 0 10px;
-    top: 40px;
-    left: 30px;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    height: 83%;
-    &-wrap {
-      padding: 15px 10px;
-      .upload-empty-layout {
-        width: 98%;
+    box-sizing: border-box;
+    padding: 16px;
+
+    .image-group {
+      display: flex;
+      flex-wrap: wrap;
+      .image {
         display: flex;
+        flex-direction: column;
         align-items: center;
-        justify-content: center;
-        height: 400px;
-        border: 1px dashed rgba(0, 0, 0, 0.12);
-        &:hover {
-          background-color: #fafafc;
-          transition: all 0.5s ease;
+        position: relative;
+        margin-right: 20px;
+        margin-bottom: 20px;
+        .pic-name {
+          text-overflow: ellipsis;
+          /* 当文本溢出时隐藏溢出部分 */
+          overflow: hidden;
+          /* 强制文本在一行显示，不换行 */
+          white-space: nowrap;
+          /* 设置最大宽度为100px，可根据实际情况调整 */
+          max-width: 100px;
         }
-        transition: all 0.5s ease;
-        .empty {
-          display: flex;
-          cursor: pointer;
-          flex-direction: column;
-          align-items: center;
-          color: rgba(31, 34, 37, 0.3);
+        &:hover {
+          .image-block-left {
+            opacity: 1;
+            transition: all 0.2s ease;
+          }
+          .image-block-right {
+            opacity: 1;
+            transition: all 0.2s ease;
+          }
+          .image-block-center {
+            opacity: 1;
+            transition: all 0.2s ease;
+          }
+        }
+        .cancel {
+          opacity: 1;
+        }
+        &-block {
+          border-radius: 4px;
+          &-center {
+            transition: all 0.5s ease;
+            cursor: pointer;
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background-color: #fff;
+            border-radius: 5px;
+            filter: blur(5px);
+          }
+          &-left {
+            transition: all 0.5s ease;
+            cursor: pointer;
+            position: absolute;
+            opacity: 0;
+            left: 4px;
+            top: 4px;
+            width: 20px;
+            height: 20px;
+            border-radius: 5px;
+          }
+
+          &-right {
+            transition: all 0.5s ease;
+            cursor: pointer;
+            position: absolute;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            right: 4px;
+            top: 4px;
+            width: 20px;
+            height: 20px;
+            background-color: #fff;
+            color: #ab353b;
+            border-radius: 5px;
+            background-image: '/image/bin.svg';
+          }
         }
       }
     }
-    &-pagnination-wrap {
-      position: absolute;
-      bottom: 0px;
-      height: 50px;
+
+    .image-empty {
       width: 100%;
-      background-color: #fff;
+      height: 310px;
       display: flex;
       align-items: center;
       justify-content: center;
-    }
-    .image {
-      display: flex;
       flex-direction: column;
-      align-items: center;
-      position: relative;
-      .pic-name {
-        text-overflow: ellipsis;
-        /* 当文本溢出时隐藏溢出部分 */
-        overflow: hidden;
-        /* 强制文本在一行显示，不换行 */
-        white-space: nowrap;
-        /* 设置最大宽度为100px，可根据实际情况调整 */
-        max-width: 100px;
-      }
-      &:hover {
-        .image-block-left {
-          opacity: 1;
-          transition: all 0.2s ease;
-        }
-        .image-block-right {
-          opacity: 1;
-          transition: all 0.2s ease;
-        }
-        .image-block-center {
-          opacity: 1;
-          transition: all 0.2s ease;
-        }
-      }
-      .cancel {
-        opacity: 1;
-      }
-      &-block {
-        border-radius: 4px;
-        &-center {
-          transition: all 0.5s ease;
-          cursor: pointer;
-          position: absolute;
-          width: 100%;
-          height: 100%;
-          background-color: #fff;
-          border-radius: 5px;
-          filter: blur(5px);
-        }
-        &-left {
-          transition: all 0.5s ease;
-          cursor: pointer;
-          position: absolute;
-          opacity: 0;
-          left: 4px;
-          top: 4px;
-          width: 20px;
-          height: 20px;
-          border-radius: 5px;
-        }
-
-        &-right {
-          transition: all 0.5s ease;
-          cursor: pointer;
-          position: absolute;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          opacity: 0;
-          right: 4px;
-          top: 4px;
-          width: 20px;
-          height: 20px;
-          background-color: #fff;
-          color: #ab353b;
-          border-radius: 5px;
-          background-image: '/image/bin.svg';
-        }
+      &-title {
+        margin-top: 40px;
+        color: rgba(0, 0, 0, 0.3);
       }
     }
+  }
+
+  &-pagnination {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-top: 20px;
+    width: 100%;
   }
 }
 </style>

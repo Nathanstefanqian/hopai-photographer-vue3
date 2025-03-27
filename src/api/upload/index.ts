@@ -32,6 +32,11 @@ export const deletePhotographerPic = (id: any) => {
   return request.delete({ url: `/platform-api/member/photographer/deliver-pic/delete/${id}` })
 }
 
+// 更新订单照片的状态
+export const updatePhotographerPicStatus = (id: any) => {
+  return request.get({ url:`/app-api/member/order/order/finish/${id}` })
+}
+
 // 获取该订单下所有照片的分页
 export const getPhotographerPic = (data: getPicVO) => {
   return request.get({ url: `/platform-api/member/photographer/deliver-pic/page?pageSize=${data.pageSize}&pageNo=${data.pageNo}&orderId=${data.orderId}&statusList=${data.statusList}` })
