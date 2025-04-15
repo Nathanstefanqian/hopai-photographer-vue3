@@ -262,20 +262,15 @@ const handleDeletePhoto = (index: number) => {
   message.success('删除成功')
 }
 
-const handleDeleteTouchPhoto = async (id: any) => {
-  const res = await uploadApi.updatePhotographerPic({ id, bigPicUrl: '' })
-  if (res) {
-    message.success('删除成功')
-    await getData(active.value)
-  }
-}
-
-// 提交事件
-// const handleSubmitOriginal = async () => {
-//   await uploadApi.postSubmitOrder(id)
-//   message.success('原图提交成功')
-//   await getData(active.value)
+// const handleDeleteTouchPhoto = async (id: any) => {
+//   const res = await uploadApi.updatePhotographerPic({ id, bigPicUrl: '' })
+//   if (res) {
+//     message.success('删除成功')
+//     await getData(active.value)
+//   }
 // }
+
+
 
 const handleSubmitTouch = async () => {
   const error = ref(true)
@@ -290,7 +285,7 @@ const handleSubmitTouch = async () => {
           id: item.id,
           status: 2
         }
-        await uploadApi.updatePhotographerPic(params)
+        // await uploadApi.updatePhotographerPic(params)
       })
     )
     // await uploadApi.updatePhotographerPicStatus(id)
@@ -516,7 +511,7 @@ const getData = async (activeId: any, isLoadMore = false) => {
       picDataTotal.value = pic.total
     }
     
-    hasMore.value = (active.value ? touchData.value.length : picData.value.length) < (active.value ? touchDataTotal.value : picDataTotal.value)
+    // hasMore.value = (active.value ? touchData.value.length : picData.value.length) < (active.value ? touchDataTotal.value : picDataTotal.value)
 
     // 处理图片URL
     await Promise.all(
