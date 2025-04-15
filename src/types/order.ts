@@ -19,12 +19,13 @@ export interface UserVO {
 }
 
 export interface picVO {
+  picType?: number
   orderId: string
   picName?: string
   picUrl: string
   bigPicUrl?: string
   description?: string
-  status?: string
+  status?: number
   id?: string
   picUrlMini?: string
   bigPicUrlMini?: string

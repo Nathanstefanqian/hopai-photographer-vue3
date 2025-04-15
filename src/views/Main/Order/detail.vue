@@ -34,29 +34,19 @@
         </div>
       </n-layout>
 
-      <n-layout class="upload" style="display: relative">
+      <n-layout class="upload" style="display: relative" :native-scrollbar="false">
         <n-layout-header class="upload-header">
           <div class="left">
-            <span :class="!active ? 'active' : ''" @click="() => getData(0)">底图</span>
-            <span :class="!active ? '' : 'active'" style="margin-left: 20px" @click="getData(1)"
-              >精修图</span
-            >
+            <span :class="{ active: !active }" @click="getData(0)">底图</span>
+            <span :class="{ active: active }" style="margin-left: 20px" @click="getData(1)">精修图</span>
           </div>
           <div class="right">
             <span style="margin-right: 10px">
-              {{
-                active
-                  ? '顾客已选择 ' + touchDataTotal + ' 张/ 已精修 ' + touchDataFinishedTotal
-                  : '已上传 ' + picDataTotal
-              }}
-              张
-              <span style="color: red">{{ active ? '(点击图片上传按钮上传精修图)' : '' }}</span>
+              {{ uploadStatusText }}
+              <span style="color: red">{{ uploadTipText }}</span>
             </span>
 
-            <n-button
-              style="margin-right: 20px"
-              @click="triggerFileInput"
-              v-if="data.orderStatus == 3 && !active"
+            <n-button style="margin-right: 20px" @click="triggerFileInput" v-if="showUploadButton"
               >上传原图</n-button
             >
 
@@ -74,124 +64,140 @@
               @change="handleTouchFileChange"
             />
 
-            <n-popconfirm @positive-click="handleSubmitOriginal" v-if="!active">
+            <n-popconfirm @positive-click="handleSubmit">
               <template #trigger>
-                <n-button type="primary" :disabled="data.orderStatus !== 3">提交原图</n-button>
+                <n-button type="primary" :disabled="!canSubmit">{{ submitButtonText }}</n-button>
               </template>
-              确认提交原图嘛
-            </n-popconfirm>
-            <n-popconfirm @positive-click="handleSubmitTouch" v-else>
-              <template #trigger>
-                <n-button type="primary" :disabled="data.orderStatus !== 5">提交精修图</n-button>
-              </template>
-              确认提交精修图嘛
+              {{ submitConfirmText }}
             </n-popconfirm>
           </div>
         </n-layout-header>
-        <n-layout-content class="upload-content" :native-scrollbar="false">
-          <div class="image-group" v-if="!active">
-            <div class="image" v-for="(item, index) in picData" v-bind:key="index">
-              <n-image
-                class="image-block"
-                width="120"
-                height="160"
-                object-fit="cover"
-                :src="item.picUrlMini"
-                :preview-src="item.picUrl"
-                fallback-src="https://07akioni.oss-cn-beijing.aliyuncs.com/07akioni.jpeg"
-              />
-              <span class="pic-name">{{ item.picName }}</span>
-              <n-popconfirm
-                @positive-click="handleDeletePhoto(item.id)"
-                v-if="!active && data.orderStatus == 3"
-              >
-                <template #trigger>
-                  <div class="image-block-right">
-                    <n-icon><Trash /></n-icon>
-                  </div>
-                </template>
-                确认删除该照片嘛
-              </n-popconfirm>
-            </div>
-          </div>
-          <div class="image-group" v-else>
-            <div class="image" v-for="(item, index) in touchData" v-bind:key="index">
-              <n-image
-                class="image-block"
-                width="120"
-                height="160"
-                object-fit="cover"
-                :src="item.bigPicUrlMini ? item.bigPicUrlMini : item.picUrlMini"
-                :preview-src="item.bigPicUrl ? item.bigPicUrl : item.picUrl"
-                fallback-src="https://07akioni.oss-cn-beijing.aliyuncs.com/07akioni.jpeg"
-              />
-              <span class="pic-name">{{ item.picName }}</span>
-              <div class="image-block-left cancel">
-                <n-icon-wrapper :size="20" :border-radius="10">
-                  <n-icon v-if="item.bigPicUrl" :size="15" :component="Checkmark16Filled" />
-                  <n-icon
-                    v-else
-                    :size="15"
-                    :component="ArrowUpload24Filled"
-                    @click="handleUpload(item.id)"
-                  />
-                </n-icon-wrapper>
+        <n-layout-content class="upload-content" 
+          :native-scrollbar="false" 
+          @dragover.prevent="isDragging = true"
+          @dragleave.prevent="isDragging = false"
+          @drop.prevent="handleDrop"
+          :class="{'dragging': isDragging}">
+          <div class="image-content" v-if="picData.length">
+            <!-- 底图 -->
+            <div class="image-group" v-if="active == 0">
+              <div class="image" v-for="(item, index) in localPictures" v-bind:key="index">
+                <n-image
+                  lazy
+                  class="image-block" 
+                  width="120"
+                  height="160"
+                  object-fit="cover"
+                  :src="item.localUrl"
+                  :preview-src="item.localUrl"
+                  fallback-src="https://07akioni.oss-cn-beijing.aliyuncs.com/07akioni.jpeg"
+                />
+                <span class="pic-name">{{ item.picName }}</span>
+                <n-popconfirm
+                  @positive-click="handleDeletePhoto(index)" 
+                  v-if="!active && data.orderStatus == 3"
+                >
+                  <template #trigger>
+                    <div class="image-block-right">
+                      <n-icon><Trash /></n-icon>
+                    </div>
+                  </template>
+                  确认删除该照片嘛
+                </n-popconfirm>
               </div>
-              <n-popconfirm
-                @positive-click="handleDeleteTouchPhoto(item.id)"
-                v-if="item.bigPicUrl && data.orderStatus == 5"
-              >
-                <template #trigger>
-                  <div class="image-block-right">
-                    <n-icon><Trash /></n-icon>
-                  </div>
-                </template>
-                确认删除该精修照片嘛
-              </n-popconfirm>
             </div>
-          </div>
-          <div
-            class="image-empty"
-            v-if="(active && !touchData.length) || (!active && !picData.length)"
-          >
-            <n-image src="/image/empty.svg" preview-disabled />
-            <span class="image-empty-title">暂无图片</span>
-          </div>
-        </n-layout-content>
-        <div
-          class="upload-pagnination"
-          v-if="!((active && !touchData.length) || (!active && !picData.length))"
-        >
-          <n-pagination
-            v-model:page="queryParams.pageNo"
-            v-model:page-size="queryParams.pageSize"
-            :item-count="active ? touchDataTotal : picDataTotal"
-            @click="getData(active)"
-          />
+            <!-- <n-spin v-if="isLoading && hasMore" class="loading-more">
+              <template #icon>
+                <n-icon class="loading-icon"><IconLoadingFilled /></n-icon>
+              </template>
+              <span>加载更多...</span>
+            </n-spin> -->
+            <div class="image-group image-group-touch" v-else>
+              <n-layout-content class="image-group-touch-1" :native-scrollbar="false">
+                <div>用户选择的底图</div>
+
+              </n-layout-content>
+              <n-layout-content class="image-group-touch-2" :native-scrollbar="false">
+                <div>上传的精修图</div>
+              </n-layout-content>
+              <!-- <div class="image" v-for="(item, index) in touchData" v-bind:key="index">
+                <n-image
+                  class="image-block"
+                  width="120"
+                  height="160"
+                  object-fit="cover"
+                  :src="item.bigPicUrlMini ? item.bigPicUrlMini : item.picUrlMini"
+                  :preview-src="item.bigPicUrl ? item.bigPicUrl : item.picUrl"
+                  fallback-src="https://07akioni.oss-cn-beijing.aliyuncs.com/07akioni.jpeg"
+                />
+                <span class="pic-name">{{ item.picName }}</span>
+                <div class="image-block-left cancel">
+                  <n-icon-wrapper :size="20" :border-radius="10">
+                    <n-icon v-if="item.bigPicUrl" :size="15" :component="Checkmark16Filled" />
+                    <n-icon
+                      v-else
+                      :size="15"
+                      :component="ArrowUpload24Filled"
+                      @click="handleUpload(item.id)"
+                    />
+                  </n-icon-wrapper>
+                </div>
+                <n-popconfirm
+                  @positive-click="handleDeleteTouchPhoto(item.id)"
+                  v-if="item.bigPicUrl && data.orderStatus == 5"
+                >
+                  <template #trigger>
+                    <div class="image-block-right">
+                      <n-icon><Trash /></n-icon>
+                    </div>
+                  </template>
+                  确认删除该精修照片嘛
+                </n-popconfirm>
+              </div> -->
+            </div>
         </div>
-      </n-layout>
-      <n-modal v-model:show="uploadModal" :mask-closable="false">
-        <n-card
-          style="width: 600px"
-          title="正在上传中请勿关闭此窗口"
-          :bordered="false"
-          size="small"
-          role="dialog"
-          aria-modal="true"
+        <div
+          class="image-empty"
+          v-else
         >
-          <template #header-extra>
-            <n-button @click="handleUploadAbort" :bordered="false">停止</n-button>
-          </template>
-          <div class="uploadModal-layout">
-            上传进度 {{ uploadNumberSuccess + '/' + uploadNumberTotal }}
-          </div>
-        </n-card>
-      </n-modal>
-    </n-spin>
-  </div>
+          <n-image src="/image/empty.svg" preview-disabled />
+          <span class="image-empty-title">暂无图片</span>
+        </div>
+      </n-layout-content>
+
+      <div
+        class="upload-pagnination"
+      >
+        <n-pagination
+          v-model:page="queryParams.pageNo"
+          v-model:page-size="queryParams.pageSize"
+          :item-count="active ? touchDataTotal : picDataTotal"
+          @click="getData(active)"
+        />
+      </div>
+    </n-layout>
+    <n-modal v-model:show="uploadModal" :mask-closable="false">
+      <n-card
+        style="width: 600px"
+        title="正在上传中请勿关闭此窗口"
+        :bordered="false"
+        size="small"
+        role="dialog"
+        aria-modal="true"
+      >
+        <template #header-extra>
+          <n-button @click="handleUploadAbort" :bordered="false">停止</n-button>
+        </template>
+        <div class="uploadModal-layout">
+          上传进度 {{ uploadNumberSuccess + '/' + uploadNumberTotal }}
+        </div>
+      </n-card>
+    </n-modal>
+  </n-spin>
+</div>
 </template>
 <script setup lang="ts">
-import { ref, onMounted, reactive } from 'vue'
+import { ref, onMounted, reactive, computed } from 'vue'
 import { useRoute } from 'vue-router'
 import { CopyOutline, Trash } from '@vicons/ionicons5'
 import Checkmark16Filled from '@vicons/fluent/Checkmark16Filled'
@@ -204,6 +210,11 @@ import type { orderVO, picVO } from '@/types/order'
 import { useMessage } from 'naive-ui'
 import { useUpload } from '@/hooks/useUpload'
 const message = useMessage()
+
+interface LocalPicVO extends Omit<picVO, 'picUrl'> {
+  file: File
+  localUrl: string
+}
 const route = useRoute()
 const active = ref(0) // 激活标签
 const id = route.params.id ?? '' // 订单id
@@ -225,31 +236,30 @@ const picDataTotal = ref<number>() // 总数
 const touchData = ref<picVO[]>([]) // 用来维护精修图的数组
 const touchDataTotal = ref<number>() // 总数
 const touchDataFinishedTotal = ref<number>(0) // 已精修的个数
+// 滚动加载相关
+const isLoading = ref(false)
+const hasMore = ref(true)
+const isDragging = ref(false)
 
-// 测试用图片数组
-const testData = ref<picVO[]>(
-  Array.from({ length: 35 }, (_, index) => ({
-    orderId: '1776907519184646145',
-    picName: 'test',
-    picUrl: ''
-  }))
-)
+
+
+// 本地存储图片数组
+const localPictures = ref<LocalPicVO[]>([])
+const localTouchPictures = ref<LocalPicVO[]>([])
 
 // 请求参数
 const queryParams = reactive({
   pageNo: 1,
-  pageSize: 50,
+  pageSize: 20,
   orderId: id,
-  statusList: ['0', '1']
+  statusList: ['0', '1'],
+  picType: 0
 })
 
 // 删除事件
-const handleDeletePhoto = async (id: any) => {
-  const res = await uploadApi.deletePhotographerPic(id)
-  if (res) {
-    message.success('删除成功')
-    await getData(active.value)
-  }
+const handleDeletePhoto = (index: number) => {
+  localPictures.value.splice(index, 1)
+  message.success('删除成功')
 }
 
 const handleDeleteTouchPhoto = async (id: any) => {
@@ -261,11 +271,11 @@ const handleDeleteTouchPhoto = async (id: any) => {
 }
 
 // 提交事件
-const handleSubmitOriginal = async () => {
-  await uploadApi.postSubmitOrder(id)
-  message.success('原图提交成功')
-  await getData(active.value)
-}
+// const handleSubmitOriginal = async () => {
+//   await uploadApi.postSubmitOrder(id)
+//   message.success('原图提交成功')
+//   await getData(active.value)
+// }
 
 const handleSubmitTouch = async () => {
   const error = ref(true)
@@ -293,6 +303,32 @@ const handleSubmitTouch = async () => {
   }
 }
 
+const uploadStatusText = computed(() =>
+  active.value
+    ? `顾客已选择 ${touchDataTotal.value} 张/ 已精修 ${touchDataFinishedTotal.value} 张`
+    : `已上传 ${picDataTotal.value} 张`
+)
+
+const uploadTipText = computed(() => (active.value ? '(点击图片上传按钮上传精修图)' : ''))
+
+const showUploadButton = computed(() => data.value.orderStatus === 3 && !active.value)
+
+const canSubmit = computed(() =>
+  active.value ? data.value.orderStatus === 5 : data.value.orderStatus === 3
+)
+
+const submitButtonText = computed(() => (active.value ? '提交精修图' : '提交原图'))
+
+const submitConfirmText = computed(() => (active.value ? '确认提交精修图嘛' : '确认提交原图嘛'))
+
+const handleSubmit = () => {
+  if (active.value) {
+    handleSubmitTouch()
+  } else {
+    handleSubmitOriginal()
+  }
+}
+
 // 上传精修图
 const handleUpload = async (id: any) => {
   photoId.value = id
@@ -306,97 +342,181 @@ const triggerFileInput = () => {
 }
 
 // 上传事件
+const compressImage = async (file: File): Promise<string> => {
+  return new Promise((resolve) => {
+    const reader = new FileReader()
+    reader.onload = (e) => {
+      const img = new Image()
+      img.onload = () => {
+        const canvas = document.createElement('canvas')
+        const ctx = canvas.getContext('2d')
+        const width = img.width * 0.4
+        const height = img.height * 0.4
+        canvas.width = width
+        canvas.height = height
+        ctx?.drawImage(img, 0, 0, width, height)
+        resolve(canvas.toDataURL('image/jpeg', 0.1))
+      }
+      img.src = e.target?.result as string
+    }
+    reader.readAsDataURL(file)
+  })
+}
+
 const handleFileChange = async (event: Event) => {
-  // 处理文件变更
   uploadModal.value = true
   uploadNumberSuccess.value = 0
-  const selectedFile = (event.target as HTMLInputElement).files
-  if (!selectedFile) return
-  console.log(selectedFile.length)
-  uploadNumberTotal.value = selectedFile.length
-  for (const file of selectedFile) {
-    if (uploadAbort.value) break
-    const uuid = makeUUID()
-    // 先上传到oss
-    let name = `${data.value.memberId}/${id}/${uuid}`
-    await put(name, file)
-    // 这里获取到上传后的url
-    let url = await signatrueUrl(name)
-    // 对url进行处理
-    let index = url.indexOf('?')
-    url = url.substring(0, index)
-    const params = reactive({
-      orderId: id,
+  const selectedFiles = (event.target as HTMLInputElement).files
+  if (!selectedFiles) return
+  uploadNumberTotal.value = selectedFiles.length
+
+  for (const file of selectedFiles) {
+    if (!file.type.startsWith('image/')) {
+      message.error('只能上传图片文件')
+      continue
+    }
+
+    const compressedUrl = await compressImage(file)
+    localPictures.value.push({
+      orderId: id as string,
       picName: file.name,
-      bigPicUrl: '',
-      picUrl: url,
-      description: '',
+      file,
+      localUrl: compressedUrl,
+      picType: 0,
       status: 0
     })
-    const res = await uploadApi.postPhotographerPic(params)
-    if (res) {
-      uploadNumberSuccess.value += 1
+    uploadNumberSuccess.value += 1
+  }
+
+  if(uploadNumberSuccess.value == uploadNumberTotal.value){
+    setTimeout(() => {
+      uploadModal.value = false
+      message.success('添加原图成功')
+      getData(active.value)
+    }, 1000)
+  }
+}
+
+// 正式上传
+const handleSubmitOriginal = async () => {
+  const uploadParams: any = []
+  for (const item of localPictures.value) {
+    const uuid = makeUUID()
+    let name = `${data.value.memberId}/${id}/${uuid}`
+    await put(name, item.file)
+    let url = await signatrueUrl(name)
+    let index = url.indexOf('?')
+    url = url.substring(0, index)
+    uploadParams.push({
+      orderId: item.orderId,
+      picName: item.picName,
+      picType: item.picType,
+      status: item.status,
+      picUrl: url
+    })
+  }
+  
+  if (uploadParams.length > 0) {
+    const res = await uploadApi.postPhotographerPic(uploadParams)
+    if (!res) {
+      return message.error('提交失败')
+    } else {
+      message.success('提交成功')
+      await getData(active.value)
     }
-    await getData(active.value)
   }
-  if (uploadAbort.value) {
-    message.error('上传中断')
-    uploadAbort.value = false
-  } else {
-    message.success('上传成功')
-  }
-  uploadModal.value = false
+
+
+  // await uploadApi.postSubmitOrder(id)
+  // message.success('原图提交成功')
+  await getData(active.value)
 }
 
 const handleTouchFileChange = async (event: Event) => {
-  const selectedFile = (event.target as HTMLInputElement).files
-  if (!selectedFile) return
-  const file = selectedFile[0]
-  console.log(file)
-  const uuid = makeUUID()
-  // 先上传到oss
-  let name = `${data.value.memberId}/${id}/${uuid}`
-  await put(name, file)
-  // 这里获取到上传后的url
-  let url = await signatrueUrl(name)
-  // 对url进行处理
-  let index = url.indexOf('?')
-  url = url.substring(0, index)
-  const params = {
-    id: photoId.value,
-    bigPicUrl: url
-  }
-  const res = await uploadApi.updatePhotographerPic(params)
-  if (res) {
-    message.success('上传精修图成功')
-    await getData(active.value)
-  }
+  uploadModal.value = true
+  uploadNumberSuccess.value = 0
+  const selectedFiles = (event.target as HTMLInputElement).files
+  if (!selectedFiles) return
+  uploadNumberTotal.value = selectedFiles.length
+
+  for (const file of selectedFiles) {
+    // 检查文件类型
+    if (!file.type.startsWith('image/')) {
+      message.error('只能上传图片文件')
+      continue
+    }
+
+    const localUrl = URL.createObjectURL(file)
+    localTouchPictures.value.push({
+      orderId: id as string,
+      picName: file.name,
+      file,
+      localUrl,
+      picType: 1,
+      status: 0
+    })
+    uploadNumberSuccess.value += 1
+}
+
+if(uploadNumberSuccess.value == uploadNumberTotal.value){
+  setTimeout(() => {
+    uploadModal.value = false
+    message.success('添加精修图成功')
+  }, 1000)
+}
 }
 
 const handleUploadAbort = async () => {
   uploadAbort.value = true
+  uploadModal.value = false
 }
 
+
+
 // 获取数据
-const getData = async (activeId: any) => {
-  loading.value = true
+const getData = async (activeId: any, isLoadMore = false) => {
+  loading.value = !isLoadMore
   touchDataFinishedTotal.value = 0
-  if (active.value != activeId) {
+  data.value = await orderApi.getOrderDetail(id)
+  if (active.value != activeId && !isLoadMore) {
     active.value = activeId
     queryParams.pageNo = 1
+    queryParams.pageSize = 50
+    hasMore.value = true
+  }
+  
+  // 订单状态为3(待传图)且在底图tab时使用本地图片
+  if (data.value.orderStatus === 3 && !active.value) {
+    const startIndex = (queryParams.pageNo - 1) * queryParams.pageSize
+    const endIndex = startIndex + queryParams.pageSize
+    const paginatedPictures = localPictures.value.slice(startIndex, endIndex)
+    
+    picData.value = paginatedPictures.map(item => ({
+      ...item,
+      picUrl: item.localUrl,
+      picUrlMini: item.localUrl
+    }))
+    picDataTotal.value = localPictures.value.length
+    loading.value = false
+    return
   }
 
+  // 只在非待传图状态或精修图tab时调用接口
   queryParams.statusList = active.value ? ['1', '2'] : ['0', '1', '2']
+  queryParams.orderId = id
+  queryParams.picType = 0
 
   try {
     let pic = await uploadApi.getPhotographerPic(queryParams)
     if (active.value) {
-      touchData.value = pic.list
+      touchData.value = isLoadMore ? [...touchData.value, ...pic.list] : pic.list
       touchDataTotal.value = pic.total
     } else {
-      picData.value = pic.list
+      picData.value = isLoadMore ? [...picData.value, ...pic.list] : pic.list
       picDataTotal.value = pic.total
     }
+    
+    hasMore.value = (active.value ? touchData.value.length : picData.value.length) < (active.value ? touchDataTotal.value : picDataTotal.value)
 
     // 处理图片URL
     await Promise.all(
@@ -408,7 +528,6 @@ const getData = async (activeId: any) => {
         if (item.bigPicUrl) {
           index = item.bigPicUrl.indexOf('.com') + 4
           item.bigPicUrlMini = await signatrueUrl(`${item.bigPicUrl.substring(index)}/minipreview`)
-          console.log(item.picName, '下的', item.bigPicUrlMini)
           item.bigPicUrl = await signatrueUrl(item.bigPicUrl.substring(index))
           touchDataFinishedTotal.value += 1
         }
@@ -416,7 +535,6 @@ const getData = async (activeId: any) => {
       })
     )
 
-    data.value = await orderApi.getOrderDetail(id)
   } finally {
     loading.value = false
   }
@@ -436,12 +554,52 @@ const getStatus = (id: any) => {
   }
 }
 
+const handleDrop = async (event: DragEvent) => {
+  if (data.value.orderStatus !== 3 || active.value !== 0) return
+  isDragging.value = false
+  const files = event.dataTransfer?.files
+  if (!files) return
+
+  const validFiles = Array.from(files).filter(file => file.type.startsWith('image/'))
+  
+  if (validFiles.length === 0) {
+    message.error('只能上传图片文件')
+    return
+  }
+
+  uploadModal.value = true
+  uploadNumberSuccess.value = 0
+  uploadNumberTotal.value = validFiles.length
+
+  for (const file of validFiles) {
+    const localUrl = URL.createObjectURL(file)
+    localPictures.value.push({
+      orderId: id as string,
+      picName: file.name,
+      file,
+      localUrl,
+      picType: 0,
+      status: 0
+    })
+    uploadNumberSuccess.value += 1
+  }
+
+  if(uploadNumberSuccess.value == uploadNumberTotal.value) {
+    setTimeout(() => {
+      uploadModal.value = false
+      message.success('添加原图成功')
+      getData(active.value)
+    }, 1000)
+  }
+}
+
 onMounted(async () => {
   await getStsToken()
   await getData(active.value)
 })
 </script>
 <style scoped lang="scss">
+/* 移除重复的style标签 */
 .card {
   width: 100%;
   box-sizing: border-box;
@@ -504,11 +662,12 @@ onMounted(async () => {
   width: 100%;
   box-sizing: border-box;
   padding: 15px 30px;
-  height: calc(100vh - 330px);
+  // height: calc(100vh - 330px);
 
   &-header {
     display: flex;
     justify-content: space-between;
+
     .left {
       font-weight: 800;
       font-size: 18px;
@@ -519,6 +678,7 @@ onMounted(async () => {
         color: #142af3;
       }
     }
+
     .right {
       display: flex;
       align-items: center;
@@ -530,8 +690,12 @@ onMounted(async () => {
   }
 
   &-content {
+    display: flex;
+    justify-content: center;
+    align-items: center;
     width: 100%;
-    height: 80%;
+    height: 500px;
+    // 这一行高度很重要 
     margin-top: 20px;
     box-sizing: border-box;
     padding: 16px;
@@ -615,15 +779,37 @@ onMounted(async () => {
           }
         }
       }
+      &-touch {
+        display: flex;
+        height: 400px;
+        &-1 {
+          width: 50%;
+          height: 400px;
+          box-sizing: border-box;
+          padding: 0 8px;
+          border-right: 2px dashed #ccc;
+          .test {
+            width: 100px;
+            height: 700px;
+            background-color: blue;
+          }
+        }
+        &-2 {
+          width: 50%;
+          height: 400px;
+          box-sizing: border-box;
+          padding: 0 8px;
+        }
+      }
+
     }
 
     .image-empty {
-      width: 100%;
-      height: 310px;
       display: flex;
       align-items: center;
       justify-content: center;
       flex-direction: column;
+      height: 468px;
       &-title {
         margin-top: 40px;
         color: rgba(0, 0, 0, 0.3);
@@ -635,8 +821,51 @@ onMounted(async () => {
     display: flex;
     align-items: center;
     justify-content: center;
-    margin-top: 20px;
     width: 100%;
   }
+  .upload {
+    &-content {
+      .loading-more {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 20px 0;
+        .loading-icon {
+          margin-right: 8px;
+          animation: rotate 1s linear infinite;
+        }
+        @keyframes rotate {
+          from { transform: rotate(0deg); }
+          to { transform: rotate(360deg); }
+        }
+      }
+    }
+  }
 }
+
+.upload-content {
+  position: relative;
+  &.dragging::after {
+    content: '释放鼠标上传图片';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    color: #fff;
+    font-size: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    pointer-events: none;
+    z-index: 1;
+  }
+}
+
 </style>
+
+
+
+
+

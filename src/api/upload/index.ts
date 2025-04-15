@@ -1,29 +1,39 @@
+import { sendSmsCode } from './../login/index';
 import request from '@/config/axios'
 
-interface postPicVO {
-  orderId?: string | string[]
-  picName?: string
-  picUrl?: string
-  bigPicUrl?: string
+interface BasePicVO {
+  orderId: string | string[]
+  picName: string
+  picType: number
   description?: string
   status?: number
-  id?: string
 }
+
+interface OriginalPicVO extends BasePicVO {
+  picUrl: any
+}
+
+interface RetouchedPicVO extends BasePicVO {
+  bigPicUrl: any
+}
+
+type PostPicVO = OriginalPicVO | RetouchedPicVO
 
 interface getPicVO {
   pageNo: number
   pageSize: number
   orderId: string | string[]
   statusList?: string[]
+  picType: number
 }
 
 // 为订单添加一张照片
-export const postPhotographerPic = (data: postPicVO) => {
+export const postPhotographerPic = (data: PostPicVO[]) => { 
   return request.post({ url: '/platform-api/member/photographer/deliver-pic/create', data })
 }
 
 // 为订单更新一张照片
-export const updatePhotographerPic = (data:postPicVO) => {
+export const updatePhotographerPic = (data: PostPicVO[]) => {
   return request.put({ url: '/platform-api/member/photographer/deliver-pic/update', data })
 }
 
@@ -39,7 +49,7 @@ export const updatePhotographerPicStatus = (id: any) => {
 
 // 获取该订单下所有照片的分页
 export const getPhotographerPic = (data: getPicVO) => {
-  return request.get({ url: `/platform-api/member/photographer/deliver-pic/page?pageSize=${data.pageSize}&pageNo=${data.pageNo}&orderId=${data.orderId}&statusList=${data.statusList}` })
+  return request.get({ url: `/platform-api/member/photographer/deliver-pic/page?pageSize=${data.pageSize}&pageNo=${data.pageNo}&orderId=${data.orderId}&statusList=${data.statusList}&picType=${data.picType}` })
 }
 
 // 获取摄影师上传作品的sts凭证
