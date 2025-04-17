@@ -67,3 +67,8 @@ export const postSubmitTouchOrder = (id:any) => {
   const data = { status: 6, orderId: id }
   return request.post({ url: '/app-api/member/p/order/updateStatus', data })
 }
+
+export const postReverseTouchOrder = (id:any) => {
+  const data = { status: 5, orderId: id }
+  return request.post({ url: '/app-api/member/p/order/updateStatus', data })
+}

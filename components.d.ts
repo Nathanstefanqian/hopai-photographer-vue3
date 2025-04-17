@@ -11,6 +11,7 @@ declare module 'vue' {
     Frame: typeof import('./src/components/layout/Frame.vue')['default']
     GlobalSetting: typeof import('./src/components/core/GlobalSetting.vue')['default']
     Header: typeof import('./src/components/layout/Header.vue')['default']
+    ImageDisplay: typeof import('./src/components/core/ImageDisplay.vue')['default']
     Layout: typeof import('./src/components/layout/Layout.vue')['default']
     NAvatar: typeof import('naive-ui')['NAvatar']
     NButton: typeof import('naive-ui')['NButton']
