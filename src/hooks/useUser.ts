@@ -11,7 +11,7 @@ export const usePhoneVerifyCode = () => {
     const data = {
       mobile,
       scene: 1,
-      userType: 1
+      userType: 3
     }
     await LoginApi.sendSmsCode(data)
     isGetingVerCode.value = true
